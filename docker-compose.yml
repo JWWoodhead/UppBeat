@@ -1,0 +1,30 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    environment:
+      - SA_PASSWORD=StrongPassword123!
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    networks:
+      - uppbeat-network
+
+  uppbeat-api:
+    build:
+      context: /src/Uppbeat.Api/.
+      dockerfile: Dockerfile
+    container_name: uppbeat-api
+    depends_on:
+      - mssql
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=UppbeatDB;User Id=sa;Password=StrongPassword123!;MultipleActiveResultSets=true;TrustServerCertificate=True;
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    networks:
+      - uppbeat-network
+
+networks:
+  uppbeat-network:
+    driver: bridge
