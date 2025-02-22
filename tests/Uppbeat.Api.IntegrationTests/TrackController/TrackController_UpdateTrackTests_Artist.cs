@@ -43,36 +43,35 @@ public class TrackController_UpdateTrackTests_Artist : IClassFixture<ArtistWebAp
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    // Cannot test without being able to update ArtistId Claim in custom auth provider. Commenting out for now due to time constraints
-    //[Fact]
-    //public async Task UpdateTrack_ForDifferentArtist_Returns400BadRequest()
-    //{
-    //    var artist1 = _testFactory.CreateArtist(new Artist { Name = "Artist1" });
-    //    var artist2 = _testFactory.CreateArtist(new Artist { Name = "Artist2" });
+    [Fact]
+    public async Task UpdateTrack_ForDifferentArtist_Returns400BadRequest()
+    {
+        var originalArtist = _testFactory.CreateArtist(new Artist { Id = 234, Name = "Artist1" });
+        var newArtist = _testFactory.CreateArtist(new Artist { Id = TestAuthHandler.DefaultClaimPolicyArtistId, Name = "Artist1" });
 
-    //    var track = _testFactory.CreateTrackWithGenres(
-    //        "Old Name",
-    //        artist1,
-    //        300,
-    //        "file.mp3",
-    //        new[] { "Rock" }
-    //    );
+        var track = _testFactory.CreateTrackWithGenres(
+            "Old Name",
+            originalArtist,
+            300,
+            "file.mp3",
+            new[] { "Rock" }
+        );
 
-    //    var client = _testFactory.CreateClient();
-    //    var requestModel = new UpdateTrackRequest
-    //    {
-    //        Name = "Unauthorized Update",
-    //        Genres = new List<string> { "Rock" },
-    //        Duration = 400,
-    //        File = "dummy.mp3"
-    //    };
+        var client = _testFactory.CreateClient();
+        var requestModel = new UpdateTrackRequest
+        {
+            Name = "Unauthorized Update",
+            Genres = new List<string> { "Rock" },
+            Duration = 400,
+            File = "dummy.mp3"
+        };
 
-    //    var response = await client.PutAsJsonAsync($"/api/tracks/{track.Id}", requestModel);
-    //    var message = await response.Content.ReadAsStringAsync();
+        var response = await client.PutAsJsonAsync($"/api/v1/tracks/{track.Id}", requestModel);
+        var message = await response.Content.ReadAsStringAsync();
 
-    //    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    //    Assert.Contains("You are not authorized to update this track", message);
-    //}
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("You are not authorized to update this track", message);
+    }
 
     [Fact]
     public async Task UpdateTrack_ForNoneExistantGenre_Returns400BadRequest()
