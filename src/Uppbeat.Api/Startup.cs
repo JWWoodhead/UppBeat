@@ -65,10 +65,13 @@ public class Startup
                     };
                 });
 
-
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IArtistService, ArtistService>();
+        services.AddTransient<ITrackService, TrackService>();
+
         services.AddTransient<IArtistRepository, ArtistRepository>();
+        services.AddTransient<IGenreRepository, GenreRepository>();
+        services.AddTransient<ITrackRepository, TrackRepository>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

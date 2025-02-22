@@ -22,6 +22,26 @@ public class AnonymousWebApplicationFactory<TStartup> : WebApplicationFactory<TS
         return _dbContext;
     }
 
+    internal Artist CreateArtist(Artist artist)
+    {
+        var context = GetDbContext();
+
+        context.Artists.Add(artist);
+        context.SaveChanges();
+
+        return artist;
+    }
+
+    internal Genre CreateGenre(Genre genre)
+    {
+        var context = GetDbContext();
+
+        context.Genres.Add(genre);
+        context.SaveChanges();
+
+        return genre;
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureServices(ReplaceDatabaseImplementation);

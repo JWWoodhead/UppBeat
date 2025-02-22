@@ -12,6 +12,11 @@ public class ArtistRepository : IArtistRepository
         _context = context;
     }
 
+    public async Task<Artist?> GetByIdAsync(int artistId, CancellationToken cancellationToken)
+    {
+        return await _context.Artists.FirstOrDefaultAsync(a => a.Id == artistId, cancellationToken);
+    }
+
     public async Task<Artist?> GetByNameAsync(string artistName, CancellationToken cancellationToken)
     {
         return await _context.Artists.FirstOrDefaultAsync(a => a.Name == artistName, cancellationToken);

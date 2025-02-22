@@ -14,21 +14,29 @@ public class ArtistService : IArtistService
         _artistRepository = artistRepository;
     }
 
-    public async Task<ReadArtistModel> CreateAsync(string artistName, CancellationToken cancellationToken)
+    public async Task<ReadArtistModel?> GetByIdAsync(int artistId, CancellationToken cancellationToken)
     {
-        var artist = new Artist(artistName);
+        var artist = await _artistRepository.GetByIdAsync(artistId, cancellationToken);
 
-        await _artistRepository.CreateAsync(artist, cancellationToken);
-
-        return MapToReadModel(artist);
+        return artist == null 
+            ? null
+            : MapToReadModel(artist);
     }
 
     public async Task<ReadArtistModel?> GetByNameAsync(string artistName, CancellationToken cancellationToken)
     {
         var artist = await _artistRepository.GetByNameAsync(artistName, cancellationToken);
 
-        if (artist == null)
-            return null;
+        return artist == null
+            ? null
+            : MapToReadModel(artist);
+    }
+
+    public async Task<ReadArtistModel> CreateAsync(string artistName, CancellationToken cancellationToken)
+    {
+        var artist = new Artist(artistName);
+
+        await _artistRepository.CreateAsync(artist, cancellationToken);
 
         return MapToReadModel(artist);
     }

@@ -2,18 +2,14 @@
 
 namespace Uppbeat.Api.Data;
 
-public class Artist
+public class Genre
 {
-    public Artist() { }
-
-    public Artist(string name)
-    {
-        Name = name;
-    }
-
     [Key]
     public int Id { get; set; }
 
     [Required]
+    [MaxLength(100)]
     public string Name { get; set; } = default!;
+
+    public virtual ICollection<TrackGenre> TrackGenres { get; set; } = new List<TrackGenre>();
 }
