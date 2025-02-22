@@ -21,6 +21,32 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves the details of a specific track by its ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the track.</param>
+    /// <param name="cancellationToken">Cancellation token assocaited with the request</param>
+    /// <returns>
+    /// Returns a 200 OK response with the track details if found,
+    /// otherwise returns a 404 Not Found response.
+    /// </returns>
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(GetTrackResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTrack(int id, CancellationToken cancellationToken)
+    {
+        var result = await _trackService.GetTrackByIdAsync(id, cancellationToken);
+
+        if (!result.IsSuccess)
+            return Problem(
+                detail: result.Error,
+                statusCode: result.StatusCode,
+                title: "Failed to get track");
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
     /// Creates a new track for the currently logged in artist user.
     /// </summary>
     /// <param name="createTrackRequest">Details of the track to be created.</param>
@@ -48,8 +74,6 @@ public class TracksController : ControllerBase
                 statusCode: result.StatusCode,
                 title: "Failed to create track");
 
-        return Created("", result.Value);
-        // Need to update to CreatedAtAction when GetTrack is implemented
-        // return CreatedAtAction(nameof(GetTrack), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtAction(nameof(GetTrack), new { id = result.Value!.Id }, result.Value);
     }
 }

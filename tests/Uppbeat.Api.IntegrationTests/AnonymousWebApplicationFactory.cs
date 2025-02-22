@@ -42,6 +42,38 @@ public class AnonymousWebApplicationFactory<TStartup> : WebApplicationFactory<TS
         return genre;
     }
 
+    public Track CreateTrackWithGenres(string name, Artist artist, int duration, string file, string[] genreNames)
+    {
+        var context = GetDbContext();
+
+        var track = new Track
+        {
+            Name = name,
+            ArtistId = artist.Id,
+            Duration = duration,
+            File = file,
+            TrackGenres = new List<TrackGenre>()
+        };
+
+        foreach (var genreName in genreNames.Distinct())
+        {
+            var genre = context.Genres.FirstOrDefault(g => g.Name == genreName) ?? new Genre { Name = genreName };
+
+            if (genre.Id == 0)
+            {
+                context.Genres.Add(genre);
+                context.SaveChanges();
+            }
+
+            track.TrackGenres.Add(new TrackGenre { GenreId = genre.Id });
+        }
+
+        context.Tracks.Add(track);
+        context.SaveChanges();
+
+        return track;
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureServices(ReplaceDatabaseImplementation);

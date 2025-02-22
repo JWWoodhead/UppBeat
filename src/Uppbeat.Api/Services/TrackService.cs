@@ -58,4 +58,24 @@ public class TrackService : ITrackService
                 .ToList(),
         });
     }
+
+    public async Task<Result<GetTrackResponse>> GetTrackByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        var track = await _trackRepository.GetByIdAsync(id, cancellationToken);
+
+        if (track == null)
+            return Result<GetTrackResponse>.NotFound($"Track with ID {id} not found");
+
+        return Result<GetTrackResponse>.Success(new GetTrackResponse
+        {
+            Id = id,
+            Name = track.Name,
+            ArtistId = track.ArtistId,
+            Duration = track.Duration,
+            File = track.File,
+            Genres = track.TrackGenres
+                .Select(tg => tg.Genre.Name)
+                .ToList()
+        });
+    }
 }
