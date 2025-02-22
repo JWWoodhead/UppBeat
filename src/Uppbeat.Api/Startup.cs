@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
-using System.Threading.RateLimiting;
 using Uppbeat.Api.Data;
 
 namespace Uppbeat.Api;
@@ -20,10 +19,23 @@ public class Startup
         services.AddDbContext<UppbeatDbContext>(options => options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
         services.AddControllers();
 
+        services.AddApiVersioning(options =>
+                {
+                    options.DefaultApiVersion = new ApiVersion(1);
+                    options.AssumeDefaultVersionWhenUnspecified = true;
+                    options.ReportApiVersions = true;
+                })
+                .AddApiExplorer(options =>
+                {
+                    options.GroupNameFormat = "'v'VVV";
+                    options.SubstituteApiVersionInUrl = true;
+                });
+
         services.AddIdentity<UppbeatUser, IdentityRole>()
                 .AddEntityFrameworkStores<UppbeatDbContext>()
                 .AddDefaultTokenProviders();
 
+        services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
             var documentationXmlPath = Path.Combine(AppContext.BaseDirectory, "Uppbeat.Api.xml");
@@ -41,6 +53,7 @@ public class Startup
             app.UseSwaggerUI();
         }
 
+        app.UseHttpsRedirection();
         app.MapControllers();
     }
 }
