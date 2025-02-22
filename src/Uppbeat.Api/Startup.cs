@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 using Uppbeat.Api.Common;
 using Uppbeat.Api.Data;
 using Uppbeat.Api.Repositories;
@@ -64,6 +65,44 @@ public class Startup
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Auth:Secret"]))
                     };
                 });
+
+        services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            {
+                // If the user is authenticated, use their identity name;
+                // otherwise, fall back to IP or "Unknown".
+                var userName = httpContext.User.Identity?.IsAuthenticated == true
+                    ? httpContext.User.Identity.Name
+                    : null;
+
+                var partitionKey = userName
+                    ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "Unknown";
+
+                const int defaultPermitLimit = 100;
+
+                // Should use "Options" config but no time...
+                if (!int.TryParse(_configuration["RateLimit:PermitLimit"], out var permitLimit))
+                    permitLimit = defaultPermitLimit;
+
+                const int defaultWindowMinutes = 1;
+
+                if (!int.TryParse(_configuration["RateLimit:WindowMinutes"], out var window))
+                    window = defaultWindowMinutes;
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey,
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = permitLimit,
+                        Window = TimeSpan.FromMinutes(window),
+                        QueueLimit = 0,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                    }
+                );
+            });
+        });
 
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IArtistService, ArtistService>();

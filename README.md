@@ -1,7 +1,7 @@
 # UppBeat
 API allowing users to perform standard CRUD operations against Track data
 
-Features
+### Features
 
 - Token-based authentication and authorization
 - Begins of Role-based access control (Anonymous and Artist currently)
@@ -50,5 +50,7 @@ docker-compose up
 
 ### Future functionality
 
-Allow tracks to be downloaded from filename specified against track. This will likely be stored in S3 and retrieved via a pre-signed URL
-Add custom policy for track downloading which should apply to both Standard users and Artists (potentially using custom user roles)
+- Allow tracks to be downloaded from filename specified against track. This will likely be stored in S3 if AWS is used and retrieved via a pre-signed URL
+- Add custom policy for track downloading which should apply to both Standard users and Artists (potentially using custom user roles)
+- Add k6 for basic load testing once a persisted DB has been created and associated rate limiting tests
+- Create terraform implementation for pushing this to whichever Cloud provider is chosen
