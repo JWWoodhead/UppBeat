@@ -59,6 +59,21 @@ public class TrackService : ITrackService
         });
     }
 
+    public async Task<Result> DeleteTrackAsync(int id, int artistId, CancellationToken cancellationToken)
+    {
+        var track = await _trackRepository.GetByIdAsync(id, cancellationToken);
+
+        if (track == null)
+            return Result.NotFound($"Track with ID {id} not found");
+
+        if (artistId != track.ArtistId)
+            return Result.BadRequest($"You cannot delete a track that does not belong to you");
+
+        await _trackRepository.DeleteAsync(track, cancellationToken);
+
+        return Result.Success();
+    }
+
     public async Task<Result<GetTrackResponse>> GetTrackByIdAsync(int id, CancellationToken cancellationToken)
     {
         var track = await _trackRepository.GetByIdAsync(id, cancellationToken);

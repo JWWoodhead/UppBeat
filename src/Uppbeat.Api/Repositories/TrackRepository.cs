@@ -66,4 +66,13 @@ public class TrackRepository : ITrackRepository
     {
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    // Could potentially be moved to a soft delete if it's deemed important to not hard delete or lots of hard deletes causing performance issues
+    public async Task DeleteAsync(Track track, CancellationToken cancellationToken)
+    {
+        _context.TrackGenres.RemoveRange(track.TrackGenres);
+        _context.Tracks.Remove(track);
+
+        await _context.SaveChangesAsync();
+    }
 }

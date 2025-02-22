@@ -50,7 +50,12 @@ public class Track
         File = trackUpdate.File;
 
         TrackGenres = matchingGenres
-            .Select(g => new TrackGenre { TrackId = Id, GenreId = g.Id })
+            .Select(genre => new TrackGenre 
+            { 
+                TrackId = Id, 
+                Genre = genre, 
+                GenreId = genre.Id 
+            })
             .ToList();
     }
 }

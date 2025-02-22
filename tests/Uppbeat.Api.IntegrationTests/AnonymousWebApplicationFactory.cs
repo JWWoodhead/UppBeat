@@ -35,6 +35,16 @@ public class AnonymousWebApplicationFactory<TStartup> : WebApplicationFactory<TS
         return genre;
     }
 
+    public Track CreateTrack(Track track)
+    {
+        var context = GetDbContext();
+
+        context.Tracks.Add(track);
+        context.SaveChanges();
+
+        return track;
+    }
+
     public Track CreateTrackWithGenres(string name, Artist artist, int duration, string file, string[] genreNames)
     {
         var context = GetDbContext();

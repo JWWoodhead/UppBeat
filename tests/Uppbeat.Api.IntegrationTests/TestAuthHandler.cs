@@ -10,6 +10,7 @@ namespace Uppbeat.Api.IntegrationTests;
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string TestScheme = "TestScheme";
+    public const int DefaultClaimPolicyArtistId = 123;
 
     public TestAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -26,7 +27,7 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
             new Claim(ClaimTypes.Role, "Artist"),
             
             // Fake ArtistId claim in situations that require user to be authed as an artist.
-            new Claim(CustomClaims.ArtistId, "123")
+            new Claim(CustomClaims.ArtistId, DefaultClaimPolicyArtistId.ToString())
         };
 
         var identity = new ClaimsIdentity(claims, TestScheme);

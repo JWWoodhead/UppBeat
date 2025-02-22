@@ -128,4 +128,33 @@ public class TracksController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Deletes an existing track for the currently logged in artist user.
+    /// </summary>
+    /// <param name="id">The unique identifier of the track to delete.</param>
+    /// <param name="cancellationToken">Cancellation token assocaited with the request</param>
+    /// <returns>
+    /// Returns a 204 No Content response if the track is successfully deleted.
+    /// Returns a 404 Not Found response if the track does not exist.
+    /// </returns>
+    [HttpDelete("{id}")]
+    [Authorize(Policy = CustomPolicies.IsArtist)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> DeleteTrack(int id, CancellationToken cancellationToken)
+    {
+        var artistId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "ArtistId")!.Value);
+
+        var result = await _trackService.DeleteTrackAsync(id, artistId, cancellationToken);
+
+        if (!result.IsSuccess)
+            return Problem(
+                detail: result.Error,
+                statusCode: result.StatusCode,
+                title: "Failed to delete track");
+
+        return NoContent();
+    }
 }

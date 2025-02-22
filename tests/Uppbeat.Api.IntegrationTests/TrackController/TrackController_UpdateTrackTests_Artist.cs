@@ -19,8 +19,7 @@ public class TrackController_UpdateTrackTests_Artist : IClassFixture<ArtistWebAp
     [Fact]
     public async Task UpdateTrack_ExistingTrack_Returns204NoContent()
     {
-        // Create artist with same Id as hard coded claim in ArtistWebApplicationFactory
-        var artist = _testFactory.CreateArtist(new Artist { Id = 123, Name = "Artist" });
+        var artist = _testFactory.CreateArtist(new Artist { Id = TestAuthHandler.DefaultClaimPolicyArtistId, Name = "Artist" });
 
         var track = _testFactory.CreateTrackWithGenres(
             "Old Name",
@@ -79,7 +78,7 @@ public class TrackController_UpdateTrackTests_Artist : IClassFixture<ArtistWebAp
     public async Task UpdateTrack_ForNoneExistantGenre_Returns400BadRequest()
     {
         // Create artist with same Id as hard coded claim in ArtistWebApplicationFactory
-        var artist = _testFactory.CreateArtist(new Artist { Id = 123, Name = "Artist" });
+        var artist = _testFactory.CreateArtist(new Artist { Id = TestAuthHandler.DefaultClaimPolicyArtistId, Name = "Artist" });
 
         var track = _testFactory.CreateTrackWithGenres(
             "Old Name",

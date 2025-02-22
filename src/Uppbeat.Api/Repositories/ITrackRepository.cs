@@ -11,4 +11,6 @@ public interface ITrackRepository
     Task<Track> CreateAsync(Track track, CancellationToken cancellationToken);
 
     Task UpdateAsync(Track track, CancellationToken cancellationToken);
+
+    Task DeleteAsync(Track track, CancellationToken cancellationToken);
 }
