@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Uppbeat.Api\Uppbeat.Api.csproj" />
+    <ProjectReference Include="..\..\src\Uppbeat.Api\Uppbeat.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
