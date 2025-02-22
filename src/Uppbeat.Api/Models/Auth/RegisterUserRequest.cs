@@ -34,4 +34,9 @@ public class RegisterUserRequest
     /// Last name of the user
     /// </summary>
     public string? LastName { get; set; }
+
+    /// <summary>
+    /// Artist name of the associated user. Specify this to give the user artist privledges
+    /// </summary>
+    public string? ArtistName { get; set; }
 }

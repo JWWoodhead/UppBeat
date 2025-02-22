@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Uppbeat.Api.Common;
 using Uppbeat.Api.Data;
+using Uppbeat.Api.Repositories;
 using Uppbeat.Api.Services;
 
 namespace Uppbeat.Api;
@@ -39,7 +41,11 @@ public class Startup
                 .AddEntityFrameworkStores<UppbeatDbContext>()
                 .AddDefaultTokenProviders();
 
-        services.AddAuthentication(options =>
+        services.AddAuthorization(options =>
+                {
+                    options.AddPolicy(CustomPolicies.IsArtist, policy => policy.RequireClaim(CustomClaims.ArtistId));
+                })
+                .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -59,7 +65,10 @@ public class Startup
                     };
                 });
 
+
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IArtistService, ArtistService>();
+        services.AddTransient<IArtistRepository, ArtistRepository>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

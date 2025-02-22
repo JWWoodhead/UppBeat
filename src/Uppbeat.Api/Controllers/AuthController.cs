@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Uppbeat.Api.Data;
 using Uppbeat.Api.Models.Auth;
+using Uppbeat.Api.Services;
 
 namespace Uppbeat.Api.Controllers;
 
@@ -16,15 +18,18 @@ public class AuthController : ControllerBase
     private readonly UserManager<UppbeatUser> _userManager;
     private readonly SignInManager<UppbeatUser> _signInManager;
     private readonly IUserService _userService;
+    private readonly IArtistService _artistService;
 
     public AuthController(
         UserManager<UppbeatUser> userManager,
         SignInManager<UppbeatUser> signInManager,
-        IUserService userService)
+        IUserService userService,
+        IArtistService artistService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _userService = userService;
+        _artistService = artistService;
     }
 
     /// <summary>
@@ -57,6 +62,16 @@ public class AuthController : ControllerBase
         };
 
         var result = await _userManager.CreateAsync(user, registerUserRequest.Password);
+
+        // Should probably be outside the controller but no time!
+        if (!string.IsNullOrEmpty(registerUserRequest.ArtistName))
+        {
+            var artist = await _artistService.GetByNameAsync(registerUserRequest.ArtistName, cancellationToken) 
+                ?? await _artistService.CreateAsync(registerUserRequest.ArtistName, cancellationToken);
+
+            var artistClaim = new Claim("ArtistId", artist.Id.ToString());
+            await _userManager.AddClaimAsync(user, artistClaim);
+        }
 
         if (!result.Succeeded)
             return Problem(

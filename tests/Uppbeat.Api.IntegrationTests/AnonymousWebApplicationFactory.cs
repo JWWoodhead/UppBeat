@@ -8,10 +8,24 @@ namespace Uppbeat.Api.IntegrationTests;
 
 public class AnonymousWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
 {
+    private IServiceScope _scope;
+    private UppbeatDbContext _dbContext;
+
+    public UppbeatDbContext GetDbContext()
+    {
+        if (_dbContext == null)
+        {
+            _scope = Services.CreateScope();
+            _dbContext = _scope.ServiceProvider.GetRequiredService<UppbeatDbContext>();
+        }
+
+        return _dbContext;
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureServices(ReplaceDatabaseImplementation);
-
+        
         return base.CreateHost(builder);
     }
 

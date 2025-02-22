@@ -1,6 +1,8 @@
 ﻿using System.Net.Http.Json;
 using System.Net;
 using Uppbeat.Api.Models.Auth;
+using Uppbeat.Api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Uppbeat.Api.IntegrationTests.AuthController;
 
@@ -8,12 +10,15 @@ namespace Uppbeat.Api.IntegrationTests.AuthController;
 public class AuthController_RegisterTests : IClassFixture<AnonymousWebApplicationFactory<Startup>>
 {
     private AnonymousWebApplicationFactory<Startup> _testFactory;
+    private UppbeatDbContext _dbContext;
 
     public AuthController_RegisterTests(
         AnonymousWebApplicationFactory<Startup> testFactory)
     {
         _testFactory = testFactory;
         _testFactory.ClearData();
+
+        _dbContext = testFactory.GetDbContext();
     }
 
     [Fact]
@@ -29,6 +34,26 @@ public class AuthController_RegisterTests : IClassFixture<AnonymousWebApplicatio
 
         var response = await client.PostAsJsonAsync("/api/v1/auth/register", requestModel);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_ValidData_WithArtistName_Returns200()
+    {
+        var expectedArtistName = "New Artist";
+        var client = _testFactory.CreateClient();
+        var requestModel = new RegisterUserRequest
+        {
+            Username = "NewUser",
+            Email = "newuser@example.com",
+            Password = "ValidPass123!",
+            ArtistName = "New Artist"
+        };
+
+        var response = await client.PostAsJsonAsync("/api/v1/auth/register", requestModel);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var artist = _dbContext.Artists.FirstOrDefaultAsync(a => a.Name == expectedArtistName);
+        Assert.NotNull(artist);
     }
 
     [Fact]
