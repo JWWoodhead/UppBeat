@@ -42,4 +42,15 @@ public class Track
     public virtual Artist Artist { get; set; } = default!;
 
     public virtual ICollection<TrackGenre> TrackGenres { get; set; } = new List<TrackGenre>();
+
+    public void Update(UpdateTrackRequest trackUpdate, IEnumerable<Genre> matchingGenres)
+    {
+        Name = trackUpdate.Name;
+        Duration = trackUpdate.Duration;
+        File = trackUpdate.File;
+
+        TrackGenres = matchingGenres
+            .Select(g => new TrackGenre { TrackId = Id, GenreId = g.Id })
+            .ToList();
+    }
 }

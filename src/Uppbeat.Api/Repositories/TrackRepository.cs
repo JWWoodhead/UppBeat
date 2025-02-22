@@ -29,4 +29,9 @@ public class TrackRepository : ITrackRepository
 
         return track;
     }
+
+    public async Task UpdateAsync(Track track, CancellationToken cancellationToken)
+    {
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

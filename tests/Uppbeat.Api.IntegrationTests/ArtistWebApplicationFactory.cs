@@ -12,6 +12,7 @@ public class ArtistWebApplicationFactory<TStartup> : AnonymousWebApplicationFact
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureServices(ReplaceAuthImplementation);
+
         return base.CreateHost(builder);
     }
 

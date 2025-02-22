@@ -78,4 +78,36 @@ public class TrackService : ITrackService
                 .ToList()
         });
     }
+
+    public async Task<Result> UpdateTrackAsync(int id, int artistId, UpdateTrackRequest updateTrackModel, CancellationToken cancellationToken)
+    {
+        var track = await _trackRepository.GetByIdAsync(id, cancellationToken);
+
+        if (track == null)
+            return Result.NotFound($"Track with ID {id} not found");
+
+        if (track.ArtistId != artistId)
+            return Result.BadRequest("You are not authorized to update this track");
+
+        var genreNames = updateTrackModel.Genres
+            .Distinct()
+            .ToList();
+
+        var matchingGenres = await _genreRepository.GetGenresByNames(genreNames, cancellationToken);
+
+        // Identify genres specified that do not exist.
+        var missingGenres = genreNames
+            .Except(matchingGenres.Select(g => g.Name))
+            .ToList();
+
+        if (missingGenres.Any())
+            return Result.BadRequest($"The following genres were not found: {string.Join(", ", missingGenres)}");
+
+        track.Update(updateTrackModel, matchingGenres);
+
+        await _trackRepository.UpdateAsync(track, cancellationToken);
+
+        return Result.Success();
+    }
+
 }

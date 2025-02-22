@@ -8,18 +8,11 @@ namespace Uppbeat.Api.IntegrationTests;
 
 public class AnonymousWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
 {
-    private IServiceScope _scope;
-    private UppbeatDbContext _dbContext;
-
     public UppbeatDbContext GetDbContext()
     {
-        if (_dbContext == null)
-        {
-            _scope = Services.CreateScope();
-            _dbContext = _scope.ServiceProvider.GetRequiredService<UppbeatDbContext>();
-        }
+        var scope = Services.CreateScope();
 
-        return _dbContext;
+        return scope.ServiceProvider.GetRequiredService<UppbeatDbContext>();
     }
 
     internal Artist CreateArtist(Artist artist)
