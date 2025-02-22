@@ -14,11 +14,17 @@ namespace Uppbeat.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly UserManager<UppbeatUser> _userManager;
+    private readonly SignInManager<UppbeatUser> _signInManager;
+    private readonly IUserService _userService;
 
     public AuthController(
-        UserManager<UppbeatUser> userManager)
+        UserManager<UppbeatUser> userManager,
+        SignInManager<UppbeatUser> signInManager,
+        IUserService userService)
     {
         _userManager = userManager;
+        _signInManager = signInManager;
+        _userService = userService;
     }
 
     /// <summary>
@@ -26,7 +32,9 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="registerUserRequest">User details to register</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation if needed.</param>
+    /// <returns>
     /// Returns a success message upon successful registration. If the user already exists or registration fails, returns an appropriate error message.
+    /// </returns>
     [HttpPost("register")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -57,5 +65,38 @@ public class AuthController : ControllerBase
                 title: "User creation failed. Please check user details and try again.");
 
         return Ok();
+    }
+    
+    /// <summary>
+    /// Authenticates a user based on provided credentials and returns a JWT token upon successful login.
+    /// </summary>
+    /// <param name="loginUserRequest">Login details including username and password.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation if needed.</param>
+    /// <returns>
+    /// Returns a JWT token if authentication is successful; otherwise, returns an error message indicating invalid credentials.
+    /// </returns>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(LoginUserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Login([FromBody] LoginUserRequest loginUserRequest, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByNameAsync(loginUserRequest.Username);
+        if (user == null)
+            return Problem(
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: "Invalid username");
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginUserRequest.Password, false);
+
+        if (!result.Succeeded)
+            return Problem(
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: "Invalid password");
+
+        var loginResponse = await _userService.LoginUserAsync(user, cancellationToken);
+
+        return Ok(loginResponse);
     }
 }
