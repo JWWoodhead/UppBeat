@@ -23,10 +23,24 @@ public class Startup
         services.AddIdentity<UppbeatUser, IdentityRole>()
                 .AddEntityFrameworkStores<UppbeatDbContext>()
                 .AddDefaultTokenProviders();
+
+        services.AddSwaggerGen(options =>
+        {
+            var documentationXmlPath = Path.Combine(AppContext.BaseDirectory, "Uppbeat.Api.xml");
+
+            if (File.Exists(documentationXmlPath))
+                options.IncludeXmlComments(documentationXmlPath);
+        });
     }
 
     public void Configure(WebApplication app)
     {
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
         app.MapControllers();
     }
 }
