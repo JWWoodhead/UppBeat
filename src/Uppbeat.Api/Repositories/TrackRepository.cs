@@ -21,6 +21,38 @@ public class TrackRepository : ITrackRepository
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
+    public async Task<(IEnumerable<Track> tracks, int totalCount)> GetTracksAsync(string? genre, string? search, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        IQueryable<Track> query = _context.Tracks
+            .Include(t => t.Artist)
+            .Include(t => t.TrackGenres)
+            .ThenInclude(tg => tg.Genre);
+
+        if (!string.IsNullOrEmpty(genre))
+        {
+            query = query.Where(t => t.TrackGenres.Any(tg => tg.Genre.Name == genre));
+        }
+
+        // Poor implementation of search - should really use a full text index but this isn't supported by the in-memory provider.
+        // The SQL server full text is also pretty bad and hasn't been updated in years so I'd probably recommend something like ElasticSearch
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(t =>
+                t.Name.Contains(search) ||
+                t.Artist.Name.Contains(search));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var tracks = await query
+            .OrderBy(t => t.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (tracks, totalCount);
+    }
+
     public async Task<Track> CreateAsync(Track track, CancellationToken cancellationToken)
     {
         _context.Tracks.Add(track);

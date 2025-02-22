@@ -5,9 +5,11 @@ namespace Uppbeat.Api.Services;
 
 public interface ITrackService
 {
-    Task<Result<CreateTrackResponse>> CreateTrackAsync(CreateTrackRequest createTrackRequest, CancellationToken cancellationToken);
-
     Task<Result<GetTrackResponse>> GetTrackByIdAsync(int id, CancellationToken cancellationToken);
+
+    Task<GetTracksResponse> GetTracksAsync(GetTracksRequest request, CancellationToken cancellationToken);
+
+    Task<Result<CreateTrackResponse>> CreateTrackAsync(CreateTrackRequest createTrackRequest, CancellationToken cancellationToken);    
 
     Task<Result> UpdateTrackAsync(int id, int artistId, UpdateTrackRequest updateTrackRequest, CancellationToken cancellationToken);
 }

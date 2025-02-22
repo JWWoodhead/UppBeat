@@ -79,7 +79,33 @@ public class TrackService : ITrackService
         });
     }
 
-    public async Task<Result> UpdateTrackAsync(int id, int artistId, UpdateTrackRequest updateTrackModel, CancellationToken cancellationToken)
+    public async Task<GetTracksResponse> GetTracksAsync(GetTracksRequest getTracksRequest, CancellationToken cancellationToken)
+    {
+        var (tracks, totalCount) = await _trackRepository
+            .GetTracksAsync(getTracksRequest.Genre, getTracksRequest.Search, getTracksRequest.Page, getTracksRequest.PageSize, cancellationToken);
+
+        return new GetTracksResponse
+        {
+            Page = getTracksRequest.Page,
+            PageSize = getTracksRequest.PageSize,
+            TotalCount = totalCount,
+            Tracks = tracks
+                .Select(t => new GetTracksItemResponse
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    Artist = t.Artist.Id,
+                    Duration = t.Duration,
+                    File = t.File,
+                    Genres = t.TrackGenres
+                        .Select(tg => tg.Genre.Name)
+                        .ToList()
+                })
+                .ToList(),
+        };
+    }
+
+    public async Task<Result> UpdateTrackAsync(int id, int artistId, UpdateTrackRequest updateTrackRequest, CancellationToken cancellationToken)
     {
         var track = await _trackRepository.GetByIdAsync(id, cancellationToken);
 
@@ -89,7 +115,7 @@ public class TrackService : ITrackService
         if (track.ArtistId != artistId)
             return Result.BadRequest("You are not authorized to update this track");
 
-        var genreNames = updateTrackModel.Genres
+        var genreNames = updateTrackRequest.Genres
             .Distinct()
             .ToList();
 
@@ -103,7 +129,7 @@ public class TrackService : ITrackService
         if (missingGenres.Any())
             return Result.BadRequest($"The following genres were not found: {string.Join(", ", missingGenres)}");
 
-        track.Update(updateTrackModel, matchingGenres);
+        track.Update(updateTrackRequest, matchingGenres);
 
         await _trackRepository.UpdateAsync(track, cancellationToken);
 

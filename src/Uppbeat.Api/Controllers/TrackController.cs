@@ -47,6 +47,28 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves a paginated list of tracks, optionally filtered by genre and/or a search term.
+    /// </summary>
+    /// <param name="request">Request containing parameters associated with filtering tracks</param>
+    /// <param name="cancellationToken">Cancellation token assocaited with the request</param>
+    /// <returns>
+    /// Returns a 200 OK response containing a <see cref="GetTracksItemResponse"/> which includes a list of tracks,
+    /// the total count of matching tracks, and pagination details.
+    /// </returns>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(GetTracksResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTracks([FromQuery] GetTracksRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var tracksResponse = await _trackService.GetTracksAsync(request, cancellationToken);
+
+        return Ok(tracksResponse);
+    }
+
+    /// <summary>
     /// Creates a new track for the currently logged in artist user.
     /// </summary>
     /// <param name="createTrackRequest">Details of the track to be created.</param>
